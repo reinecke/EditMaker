@@ -50,7 +50,7 @@ class Timecode(object):
 
     This object is geared to always preserve the total number of frames when
     performing operations. This means if you change fps, the hours, minutes,
-    seconds, and frames values will change, but totalFrames will stay the same.
+    seconds, and frames values will change, but total_frames will stay the same.
 
     Any operation setting minutes, seconds, or frames over 60, 60, and the fps
     respectively will cause an influence on the next most significant
@@ -60,92 +60,75 @@ class Timecode(object):
     field.
     '''
     # Accessors
-    def _getFrames(self):
+    def get_frames(self):
         '''
         returns the frames portion of the timecode
         '''
-        fpm = self.fps*60
-        fph = fpm*60
-        
-        rates = [fph, fpm, self.fps]
-        frames =  self._getComponent(rates)[1]
+        rates = [self.fph, self.fpm, self.fps]
+        frames =  self._tc_component_from_timebases(rates)[1]
 
         return frames
     
-    def _setFrames(self, frames):
+    def _set_frames(self, frames):
         '''
         Sets the frames portion of the timecode
         '''
-        newFrames = self.totalFrames - self.frames
+        newFrames = self.total_frames - self.frames
         newFrames += frames
-        self.totalFrames = newFrames
+        self.total_frames = newFrames
     
     def _getSeconds(self):
         '''
         returns the seconds portion of the timecode
         '''
-        fpm = self.fps*60
-        fph = fpm*60
-        
-        rates = [fph, fpm, self.fps]
-        seconds = self._getComponent(rates)[0]
+        rates = [self.fph, self.fpm, self.fps]
+        seconds = self._tc_component_from_timebases(rates)[0]
         
         return seconds
     
-    def _setSeconds(self, seconds):
+    def _set_seconds(self, seconds):
         '''
         sets the seconds portion of the timecode
         '''
         oldSeconds = self.seconds * self.fps
         newSeconds = seconds * self.fps
-        self.totalFrames = self.totalFrames - oldSeconds + newSeconds
+        self.total_frames = self.total_frames - oldSeconds + newSeconds
     
-    def _getMinutes(self):
+    def _get_minutes(self):
         '''
         returns the minutes portion of the timecode
         '''
-        fpm = self.fps*60
-        fph = fpm*60
-        
-        rates = [fph, fpm]
-        minutes = self._getComponent(rates)[0]
+        rates = [self.fph, self.fpm]
+        minutes = self._tc_component_from_timebases(rates)[0]
 
         return minutes
     
-    def _setMinutes(self, minutes):
+    def _set_minutes(self, minutes):
         '''
         sets the minutes portion of the timecode
         '''
-        fpm = self.fps*60
-
-        oldMinutes = self.minutes * fpm
-        newMinutes = minutes * fpm
-        self.totalFrames = self.totalFrames - oldMinutes + newMinutes
+        oldMinutes = self.minutes * self.fpm
+        newMinutes = minutes * self.fpm
+        self.total_frames = self.total_frames - oldMinutes + newMinutes
     
-    def _getHours(self):
+    def _get_hours(self):
         '''
         returns the minutes portion of the timecode
         '''
-        fpm = self.fps*60
-        fph = fpm*60
-        
-        rates = [fph]
-        hours = self._getComponent(rates)[0]
+        rates = [self.fph]
+        hours = self._tc_component_from_timebases(rates)[0]
 
         return hours
     
-    def _setHours(self, hours):
+    def _set_hours(self, hours):
         '''
         sets the minutes portion of the timecode
         '''
-        fpm = self.fps*60
-        fph = fpm*60
-
-        oldHours = self.hours * fph
-        newHours = hours * fph
-        self.totalFrames = self.totalFrames - oldHours + newHours
+        oldHours = self.hours * self.fph
+        newHours = hours * self.fph
+        self.total_frames = self.total_frames - oldHours + newHours
     
-    def _getTimecode(self):
+    def _get_timecode(self):
         '''
         Returns the string timecode
         '''
@@ -153,28 +136,34 @@ class Timecode(object):
         
         return fmt % (self.hours, self.minutes, self.seconds, self.frames)
     
-    def _setTimecode(self, timecode):
+    def _set_timecode(self, timecode):
         '''
         Sets to the string timecode. This should be formatted as:
         HH:MM:SS:FF
         If this string has fewer than 4 fields, they will interpreted right to
         left, populating frames first
         '''
-        self.totalFrames = _timecodeToFrames(timecode)
+        self.total_frames = _frame_count_for_timecode(timecode)
 
     # Properties
-    frames = property(_getFrames, _setFrames,
+    frames = property(get_frames, _set_frames,
                     doc = 'Represents the frames portion of the timecode')
-    hours = property(_getHours, _setHours,
+    hours = property(_get_hours, _set_hours,
                     doc = 'Represents the hours portion of the timecode')
-    minutes = property(_getMinutes, _setMinutes,
+    minutes = property(_get_minutes, _set_minutes,
                     doc = 'Represents the minutes portion of the timecode')
-    seconds = property(_getSeconds, _setSeconds,
+    seconds = property(_getSeconds, _set_seconds,
                     doc = 'Represents the seconds portion of the timecode')
-    timecode = property(_getTimecode, _setTimecode,
+    timecode = property(_get_timecode, _set_timecode,
                     doc = 'Represents the timecode string')
+
+    fpm = property(lambda s:s.fps*60, lambda s,v:setattr(s, 'fps', v/60.0),
+            doc = 'frames per minute')
+    fph = property(lambda s:s.fps*3600, lambda s,v:setattr(s, 'fps', v/3600.0),
+            doc = 'frames per hour')
+
     # Methods
-    def __init__(self, timecode = "01:00:00:00", fps = 24, totalFrames = None):
+    def __init__(self, timecode = "01:00:00:00", fps = 24, total_frames = None):
         '''
         Constructor for creating a timecode object.
         Defaults to a timecode of one hour at 24fps
@@ -190,10 +179,10 @@ class Timecode(object):
         # Internal storage
         self.fps = fps
 
-        if totalFrames:
-            self.totalFrames = totalFrames
+        if total_frames:
+            self.total_frames = total_frames
         else:
-            self.totalFrames = self._timecodeToFrames(timecode)
+            self.total_frames = self._frame_count_for_timecode(timecode)
     
     def __repr__(self):
         return "EditMaster.Timecode('%s', fps=%d)" % (self.timecode, self.fps)
@@ -201,23 +190,25 @@ class Timecode(object):
     def __str__(self):
         return '<EditMaster.Timecode: %s @ %d fps>' %(self.timecode, self.fps)
 
+    def _tc_component_from_timebases(self, base_list):
+        '''
+        Given a list of frames per unit, sequentially divides total_frames
+        by that unit base then takes the remainder frames and divides by the
+        next provided unit base. Returns a tuple (full_units, remainder).
 
-    def _getComponent(self, baseList):
+        The point is to whittle down a large number of frames by removing
+        whole hours then whole minutes then whole seconds to then find the
+        leftover frames, for example.
         '''
-        Whittles down totalFrames by each base. Returns a tuple of the evenly
-        divisible number for the last base in the list and leftover frames.
-        i.e. pass a list like [fph, fpm, fps] and you will get the seconds
-        portion of the timecode, pass [fph, fpm] and you will get the minutes.
-        '''
-        leftoverFrames = self.totalFrames
+        leftover_frames = self.total_frames
         amount = None
-        for base in baseList:
-            amount = leftoverFrames // base
-            leftoverFrames = leftoverFrames % base
+        for base in base_list:
+            amount = leftover_frames // base
+            leftover_frames = leftover_frames % base
 
-        return (amount, leftoverFrames)
+        return (amount, leftover_frames)
 
-    def _timecodeToFrames(self, timecode, fps=None):
+    def _frame_count_for_timecode(self, timecode, fps=None):
         '''
         Converts the given timecode string to integer frames.
 
@@ -246,104 +237,104 @@ class Timecode(object):
         return frames
     
     # Operators
-    def _opDetermineFrames(self, something):
+    def _frames_from_unknown(self, something):
         '''
         Tries to determine a sane frame representation of the type handed in
         '''
         thingType = type(something)
         if thingType == str:
-            return self._timecodeToFrames(something)
+            return self._frame_count_for_timecode(something)
         if thingType == int or thingType == float:
             return something
         if thingType == Timecode:
-            return something.totalFrames
+            return something.total_frames
         
         raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
 
     def __add__(self, other):
-        newTotalFrames = self.totalFrames + self._opDetermineFrames(other)
-        return Timecode(fps = self.fps, totalFrames = newTotalFrames)
+        newTotalFrames = self.total_frames + self._frames_from_unknown(other)
+        return Timecode(fps = self.fps, total_frames = newTotalFrames)
 
     def __sub__(self, other):
-        newTotalFrames = self.totalFrames - self._opDetermineFrames(other)
-        return Timecode(fps = self.fps, totalFrames = newTotalFrames)
+        newTotalFrames = self.total_frames - self._frames_from_unknown(other)
+        return Timecode(fps = self.fps, total_frames = newTotalFrames)
     
     def __mul__(self, other):
         otherType = type(other)
         if otherType == float or otherType == int:
-            newTotalFrames = self.totalFrames * other
-            return Timecode(fps = self.fps, totalFrames = newTotalFrames)
+            newTotalFrames = self.total_frames * other
+            return Timecode(fps = self.fps, total_frames = newTotalFrames)
         else:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
     
     def __div__(self, other):
-        otherFrames = self._opDetermineFrames(other)
-        divFrames = self.totalFrames // otherFrames
+        otherFrames = self._frames_from_unknown(other)
+        divFrames = self.total_frames // otherFrames
         if type(other) == Timecode:
             return int(divFrames)
         else:
-            return Timecode(totalFrames = int(divFrames), fps = self.fps)
+            return Timecode(total_frames = int(divFrames), fps = self.fps)
 
     def __mod__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        otherFrames = self._opDetermineFrames(other)
-        remainingFrames = self.totalFrames % otherFrames
-        return Timecode(totalFrames = remainingFrames, fps = self.fps)
+        otherFrames = self._frames_from_unknown(other)
+        remainingFrames = self.total_frames % otherFrames
+        return Timecode(total_frames = remainingFrames, fps = self.fps)
     
     def __lt__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        return self.totalFrames < other.totalFrames
+        return self.total_frames < other.total_frames
 
     def __le__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        return self.totalFrames <= other.totalFrames
+        return self.total_frames <= other.total_frames
 
     def __eq__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        return self.totalFrames == other.totalFrames
+        return self.total_frames == other.total_frames
 
     def __ne__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        return self.totalFrames != other.totalFrames
+        return self.total_frames != other.total_frames
 
     def __gt__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        return self.totalFrames > other.totalFrames
+        return self.total_frames > other.total_frames
 
     def __ge__(self, other):
         if type(other) != Timecode:
             raise TimecodeArithmeticException(
             "Could not convert operand to a Timecode compatible type")
-        return self.totalFrames >= other.totalFrames
+        return self.total_frames >= other.total_frames
 
 class editEvent(object):
     '''
     represents an editorial event.
     '''
     def __init__(self, start = Timecode(), end = Timecode()):
-        self.eventName = None
+        self.event_name = None
         self.tracks = 'VA1A2'
         self.start = Timecode()
         self.end = Timecode()
-        self.markIn = Timecode()
-        self.markOut = Timecode()
+        self.mark_in = Timecode()
+        self.mark_out = Timecode()
         self.tape = None
         self.scene = None
         self.DPX = None
         self.comment = None
-        self.creationDate = datetime.datetime.now()
+        self.creation_date = datetime.datetime.now()
 
