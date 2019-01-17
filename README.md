@@ -3,6 +3,8 @@ EditMaster
 
 Python Editorial Tools
 
+*NOTE: This project has been long abandoned. If this sort of thing is interesting to you, check out the [OpenTimelineIO](http://opentimeline.io) project.*
+
 Right now the only useful thing is the Timecode object. This allows for simple
 timecode math operations.
 
