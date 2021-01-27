@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 ################################################################################
-#   Name:       EditMaster
+#   Name:       EditMaker
 #   Description:
 #       		Library for dealing with editorial information
 #   History:    2010-06-10 - Initial creation
+#               2021-01-26 - Renamed library to remove oppresive terminology
 #   License: MIT
 ################################################################################
 #The MIT License (MIT)
@@ -46,7 +47,7 @@ class Timecode(object):
     Note: Drop-Frame timecode IS NOT SUPPORTED YET
 
     examples:
-    tc = EditMaster.Timecode('00:00:01:04', fps=24)
+    tc = EditMaker.Timecode('00:00:01:04', fps=24)
 
     This object is geared to always preserve the total number of frames when
     performing operations. This means if you change fps, the hours, minutes,
@@ -183,12 +184,12 @@ class Timecode(object):
             self.total_frames = total_frames
         else:
             self.total_frames = self._frame_count_for_timecode(timecode)
-    
+
     def __repr__(self):
-        return "EditMaster.Timecode('%s', fps=%d)" % (self.timecode, self.fps)
+        return "EditMaker.Timecode('%s', fps=%d)" % (self.timecode, self.fps)
 
     def __str__(self):
-        return '<EditMaster.Timecode: %s @ %d fps>' %(self.timecode, self.fps)
+        return '<EditMaker.Timecode: %s @ %d fps>' %(self.timecode, self.fps)
 
     def _tc_component_from_timebases(self, base_list):
         '''

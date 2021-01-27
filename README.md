@@ -1,4 +1,4 @@
-EditMaster
+EditMaker
 ==========
 
 Python Editorial Tools
@@ -23,10 +23,10 @@ it would yield:
 Examples
 --------
     >>> # Instantiate a timecode object
-    >>> tc1 = EditMaster.Timecode('01:00:03:12', fps=24)
+    >>> tc1 = EditMaker.Timecode('01:00:03:12', fps=24)
     >>> tc1
-    EditMaster.Timecode('01:00:03:12', fps=24)
-    
+    EditMaker.Timecode('01:00:03:12', fps=24)
+
     >>> # Access individual timecode components
     >>> tc1.hours
     1
@@ -42,13 +42,13 @@ Examples
     '01:00:03:12'
     >>> tc1.seconds = 2
     >>> tc1
-    EditMaster.Timecode('01:00:02:12', fps=24)
-    
+    EditMaker.Timecode('01:00:02:12', fps=24)
+
     >>> # Do math with the timecode
-    >>> tc2 = EditMaster.Timecode('00:00:00:20', fps=24)
+    >>> tc2 = EditMaker.Timecode('00:00:00:20', fps=24)
     >>> tc1 + tc2
-    EditMaster.Timecode('01:00:04:08', fps=24)
+    EditMaker.Timecode('01:00:04:08', fps=24)
     >>> tc1 - tc2
-    EditMaster.Timecode('01:00:02:16', fps=24)
+    EditMaker.Timecode('01:00:02:16', fps=24)
     >>> tc2 * 2
-    EditMaster.Timecode('00:00:01:16', fps=24)
+    EditMaker.Timecode('00:00:01:16', fps=24)
